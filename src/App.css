@@ -1,38 +1,15 @@
-.App {
-  text-align: center;
+.nav-item-custom {
+  font-size: 1.1rem !important; /* 메뉴 폰트 크기 증가 */
+  padding: 0.5rem 1rem !important; /* 패딩 추가 */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.nav-item-custom.active {
+  font-weight: bold !important; /* 선택된 메뉴 굵게 */
+  color: white !important; /* 선택된 메뉴 색상 변경 */
+  background-color: rgba(255, 255, 255, 0.2) !important; /* 선택된 메뉴 배경색 */
+  border-radius: 0.25rem; /* 모서리 둥글게 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.nav-item-custom:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important; /* 마우스 오버 시 배경색 */
 }
