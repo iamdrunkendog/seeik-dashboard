@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/seeik-dashboard/static/css/main.53a04b2f.css",
-    "main.js": "/seeik-dashboard/static/js/main.a9bea7c0.js",
-    "static/js/453.670e15c7.chunk.js": "/seeik-dashboard/static/js/453.670e15c7.chunk.js",
-    "index.html": "/seeik-dashboard/index.html",
-    "main.53a04b2f.css.map": "/seeik-dashboard/static/css/main.53a04b2f.css.map",
-    "main.a9bea7c0.js.map": "/seeik-dashboard/static/js/main.a9bea7c0.js.map",
-    "453.670e15c7.chunk.js.map": "/seeik-dashboard/static/js/453.670e15c7.chunk.js.map"
+    "main.css": "http://iamdrunkendog.github.io/seeik-dashboard/static/css/main.53a04b2f.css",
+    "main.js": "http://iamdrunkendog.github.io/seeik-dashboard/static/js/main.336d9449.js",
+    "static/js/453.670e15c7.chunk.js": "http://iamdrunkendog.github.io/seeik-dashboard/static/js/453.670e15c7.chunk.js",
+    "index.html": "http://iamdrunkendog.github.io/seeik-dashboard/index.html",
+    "main.53a04b2f.css.map": "http://iamdrunkendog.github.io/seeik-dashboard/static/css/main.53a04b2f.css.map",
+    "main.336d9449.js.map": "http://iamdrunkendog.github.io/seeik-dashboard/static/js/main.336d9449.js.map",
+    "453.670e15c7.chunk.js.map": "http://iamdrunkendog.github.io/seeik-dashboard/static/js/453.670e15c7.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.53a04b2f.css",
-    "static/js/main.a9bea7c0.js"
+    "static/js/main.336d9449.js"
   ]
 }
