@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/seeik-dashboard/static/css/main.53a04b2f.css",
-    "main.js": "/seeik-dashboard/static/js/main.11aec6dc.js",
+    "main.js": "/seeik-dashboard/static/js/main.a9bea7c0.js",
     "static/js/453.670e15c7.chunk.js": "/seeik-dashboard/static/js/453.670e15c7.chunk.js",
     "index.html": "/seeik-dashboard/index.html",
     "main.53a04b2f.css.map": "/seeik-dashboard/static/css/main.53a04b2f.css.map",
-    "main.11aec6dc.js.map": "/seeik-dashboard/static/js/main.11aec6dc.js.map",
+    "main.a9bea7c0.js.map": "/seeik-dashboard/static/js/main.a9bea7c0.js.map",
     "453.670e15c7.chunk.js.map": "/seeik-dashboard/static/js/453.670e15c7.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.53a04b2f.css",
-    "static/js/main.11aec6dc.js"
+    "static/js/main.a9bea7c0.js"
   ]
 }
