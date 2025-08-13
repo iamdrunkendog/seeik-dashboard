@@ -44,7 +44,7 @@ function LoginPage({ onLoginSuccess }) {
   return (
     <Container fluid className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '100vh', backgroundColor: '#ff7300' }}>
       <img
-        src="/logo.svg"
+        src={process.env.PUBLIC_URL + "/logo.svg"}
         alt="SEEIK-KIOSK Logo"
         style={{ width: '150px', marginBottom: '20px' }}
       />

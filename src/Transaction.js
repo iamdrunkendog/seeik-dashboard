@@ -10,6 +10,7 @@ function Transaction() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedStores, setSelectedStores] = useState(['BLUESQUARE', 'GSartcenter']); // 기본값: 둘 다 선택
+  const [showOnlySuspicious, setShowOnlySuspicious] = useState(false);
 
   const API_BASE_URL = 'https://9w3707plqb.execute-api.ap-northeast-2.amazonaws.com/default/orders/search';
   const BRAND_COLOR = '#FF7300';
@@ -94,6 +95,10 @@ function Transaction() {
     setSelectedStores(newSelectedStores);
   };
 
+  const filteredTransactions = transactions.filter(
+    (transaction) => !showOnlySuspicious || transaction.isErrorSuspected
+  );
+
   return (
     <Container className="mt-4">
       <h2>트랜잭션</h2>
@@ -110,6 +115,15 @@ function Transaction() {
             onChange={() => handleStoreToggle(name)}
           />
         ))}
+        <Form.Check
+          inline
+          type="checkbox"
+          id="filter-suspicious"
+          label="오류 의심건만 보기"
+          checked={showOnlySuspicious}
+          onChange={(e) => setShowOnlySuspicious(e.target.checked)}
+          className="ms-3"
+        />
       </div>
 
       <Form onSubmit={handleSearch} className="mb-4 p-4 border rounded bg-light">
@@ -150,7 +164,6 @@ function Transaction() {
         <thead>
           <tr>
             <th>상점 이름</th>
-            <th>출력수량</th>
             <th>결제 금액</th>
             <th>사진 상세 유형</th>
             <th>생성 시간</th>
@@ -160,17 +173,16 @@ function Transaction() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="6" className="text-center"><Spinner/></td>
+              <td colSpan="5" className="text-center"><Spinner/></td>
             </tr>
-          ) : transactions.length > 0 ? (
-            transactions.map((transaction) => (
+          ) : filteredTransactions.length > 0 ? (
+            filteredTransactions.map((transaction) => (
               <tr key={transaction.order_id || transaction.created_at} style={{ backgroundColor: transaction.isErrorSuspected ? '#FFDDDD' : '' }}> {/* 오류 의심 시 옅은 붉은색 배경 */}
-                <td>{transaction.store_name}</td>
-                <td>{transaction.quantity || 'N/A'}</td>
-                <td>₩ {formatNumber(transaction.payment_amount || transaction.total_sales)}</td>
-                <td>{transaction.photo_detail_type || 'N/A'}</td>
-                <td>{formatDateTime(transaction.created_at)}</td>
-                <td>
+                <td style={{ color: transaction.isErrorSuspected ? 'red' : '' }}>{transaction.store_name}</td>
+                <td style={{ color: transaction.isErrorSuspected ? 'red' : '' }}>₩ {formatNumber(transaction.payment_amount || transaction.total_sales)}</td>
+                <td style={{ color: transaction.isErrorSuspected ? 'red' : '' }}>{transaction.photo_detail_type || 'N/A'}</td>
+                <td style={{ color: transaction.isErrorSuspected ? 'red' : '' }}>{formatDateTime(transaction.created_at)}</td>
+                <td style={{ color: transaction.isErrorSuspected ? 'red' : '' }}>
                   {transaction.remark === '오류의심' ? (
                     <span style={{ color: 'red', fontWeight: 'bold' }}>{transaction.remark}</span>
                   ) : (
@@ -181,7 +193,9 @@ function Transaction() {
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">조회된 트랜잭션 데이터가 없습니다.</td>
+              <td colSpan="5" className="text-center">
+                {showOnlySuspicious ? '오류 의심 내역이 없습니다.' : '조회된 트랜잭션 데이터가 없습니다.'}
+              </td>
             </tr>
           )}
         </tbody>

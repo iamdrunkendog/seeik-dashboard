@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { Navbar, Container, Nav } from 'react-bootstrap';
 import SalesSummary from './SalesSummary';
 import Transaction from './Transaction';
@@ -15,7 +15,7 @@ function App() {
         <Container>
           <Navbar.Brand as={NavLink} to="/">
             <img
-              src="/logo.svg"
+              src={process.env.PUBLIC_URL + "/logo.svg"}
               height="30"
               className="d-inline-block align-top"
               alt="SEEIK-KIOSK Logo"
