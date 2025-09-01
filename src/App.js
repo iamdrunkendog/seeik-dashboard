@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { Navbar, Container, Nav } from 'react-bootstrap';
 import SalesSummary from './SalesSummary';
 import Transaction from './Transaction';
+import DailyReport from './DailyReport';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -25,6 +26,7 @@ function App() {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link as={NavLink} to="/" className="nav-item-custom">매출요약</Nav.Link>
+              <Nav.Link as={NavLink} to="/daily-report" className="nav-item-custom">일보</Nav.Link>
               <Nav.Link as={NavLink} to="/transactions" className="nav-item-custom">트랜잭션</Nav.Link>
             </Nav>
           </Navbar.Collapse>
@@ -33,6 +35,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<SalesSummary />} />
+        <Route path="/daily-report" element={<DailyReport />} />
         <Route path="/transactions" element={<Transaction />} />
       </Routes>
     </Router>

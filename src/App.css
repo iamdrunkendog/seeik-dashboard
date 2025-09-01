@@ -13,3 +13,22 @@
 .nav-item-custom:hover {
   background-color: rgba(255, 255, 255, 0.1) !important; /* 마우스 오버 시 배경색 */
 }
+
+/* New CSS for store-wise alternating row colors */
+.store-color-0 {
+  background-color: #f8f9fa; /* Light gray */
+}
+
+.store-color-1 {
+  background-color: #e9ecef; /* Slightly darker gray */
+}
+
+/* Ensure borders are visible */
+.table th, .table td {
+  border-color: #dee2e6 !important;
+}
+
+/* Style for the new-store-row border */
+.new-store-row {
+    border-top: 3px solid #dee2e6 !important; /* 굵은 선 */
+}
