@@ -29,6 +29,76 @@
 }
 
 /* Style for the new-store-row border */
-.new-store-row {
+.new-store-row td {
     border-top: 3px solid #dee2e6 !important; /* 굵은 선 */
+}
+
+/* Detailed report table styles for compactness */
+.detailed-report-table th,
+.detailed-report-table td {
+  font-size: 0.8rem; /* 폰트 크기 줄이기 */
+  padding: 0.25rem;   /* 셀 여백 줄이기 */
+}
+
+/* Force scrollbar to be visible */
+.table-container::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+  height: 7px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+
+/* Sticky Column Styles */
+.detailed-report-table .sticky-col {
+  position: -webkit-sticky;
+  position: sticky;
+  z-index: 2;
+}
+
+.detailed-report-table thead .sticky-col {
+  z-index: 3;
+}
+
+.detailed-report-table .sticky-col-1 {
+  left: 0;
+}
+
+.detailed-report-table .sticky-col-2 {
+  left: 120px; /* Adjusted based on first column's fixed width */
+}
+
+/* Background colors for sticky cells to prevent transparent background on scroll */
+.detailed-report-table .store-color-0 .sticky-col {
+    background-color: #f8f9fa;
+}
+.detailed-report-table .store-color-1 .sticky-col {
+    background-color: #e9ecef;
+}
+.detailed-report-table .table-secondary .sticky-col {
+    background-color: #e2e3e5; 
+}
+.detailed-report-table tr[style*="backgroundColor: white"] .sticky-col {
+    background-color: white !important;
+}
+
+/* Ensure header also has a solid background */
+.detailed-report-table thead th {
+    background-color: #f8f9fa; 
+}
+
+/* New style for fixed width of store name column */
+.col-store-name {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+/* Style to prevent text wrapping */
+.col-nowrap {
+  white-space: nowrap;
 }

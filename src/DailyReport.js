@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Container, Form, Button, Table, Spinner, Alert, Row, Col, Card, ButtonGroup } from 'react-bootstrap';
 import './App.css';
 import { formatNumber } from './utils/dateUtils';
@@ -333,6 +333,21 @@ function DailyReport() {
         return data;
     }, [dailyReportData, daysInMonth, year, month]);
 
+    const tableContainerRef = useRef(null);
+
+    const scrollToLeft = useCallback(() => {
+      if (tableContainerRef.current && tableContainerRef.current.firstChild) {
+        tableContainerRef.current.firstChild.scrollLeft = 0;
+      }
+    }, []);
+
+    const scrollToRight = useCallback(() => {
+      if (tableContainerRef.current && tableContainerRef.current.firstChild) {
+        const scrollableElement = tableContainerRef.current.firstChild;
+        scrollableElement.scrollLeft = scrollableElement.scrollWidth;
+      }
+    }, []);
+
 
     return (
         <Container className="mt-4">
@@ -501,17 +516,23 @@ function DailyReport() {
                     </Card>
 
                     {/* 컨셉별 상세매출 테이블 */}
-                    <h5 className="mt-4">{month}월 일보 (단위: 천원)</h5>
-                    <div style={{ overflowX: 'auto' }}>
-                        <Table bordered hover responsive>
+                    <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
+                        <h5 className="mb-0">{month}월 일보 (단위: 천원)</h5>
+                        <ButtonGroup size="sm">
+                            <Button variant="outline-secondary" onClick={scrollToLeft}>맨 왼쪽</Button>
+                            <Button variant="outline-secondary" onClick={scrollToRight}>맨 오른쪽</Button>
+                        </ButtonGroup>
+                    </div>
+                    <div ref={tableContainerRef} className="table-container" style={{ overflowX: 'auto' }}>
+                        <Table bordered hover responsive className="detailed-report-table">
                             <thead>
                                 <tr>
-                                    <th>점포</th>
-                                    <th>사진유형</th>
+                                    <th className="sticky-col sticky-col-1 col-store-name">점포</th>
+                                    <th className="sticky-col sticky-col-2">사진유형</th>
                                     {daysInMonth.map(day => (
                                         <th key={day} className="text-end">{day}</th>
                                     ))}
-                                    <th>누계</th>
+                                    <th className="col-nowrap">누계</th>
                                     <th>추정</th>
                                 </tr>
                             </thead>
@@ -520,7 +541,7 @@ function DailyReport() {
                                     if (row.type === 'grandtotal') {
                                         return (
                                             <tr key="grand-total" className="fw-bold" style={{ backgroundColor: 'white', color: BRAND_COLOR, borderBottom: '3px solid #495057' }}>
-                                                <td colSpan="2">전체 합계</td>
+                                                <td className="sticky-col sticky-col-1">전체</td><td className="sticky-col sticky-col-2">합계</td>
                                                 {daysInMonth.map(day => <td key={day} className="text-end">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
                                                 <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
                                                 <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
@@ -528,8 +549,8 @@ function DailyReport() {
                                         );
                                     } else if (row.type === 'subtotal') {
                                         return (
-                                            <tr key={`subtotal-${row.store_name}`} className={`table-secondary fw-bold store-color-${row.colorIndex}`}>
-                                                <td>소계</td>
+                                            <tr key={`subtotal-${row.store_name}`} className={`fw-bold store-color-${row.colorIndex}`}>
+                                                <td className="sticky-col sticky-col-2">소계</td>
                                                 {daysInMonth.map(day => <td key={day} className="text-end">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
                                                 <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
                                                 <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
@@ -537,9 +558,9 @@ function DailyReport() {
                                         );
                                     } else { // type === 'data'
                                         return (
-                                            <tr key={`${row.store_name}-${row.photo_detail_type}-${index}`} className={`store-color-${row.colorIndex}`}>
-                                                {row.isFirstInGroup && <td rowSpan={row.rowSpan} style={{verticalAlign: 'middle'}}>{row.store_name}</td>}
-                                                <td>{row.photo_detail_type}</td>
+                                            <tr key={`${row.store_name}-${row.photo_detail_type}-${index}`} className={`${row.isFirstInGroup ? 'new-store-row' : ''} store-color-${row.colorIndex}`}>
+                                                {row.isFirstInGroup && <td rowSpan={row.rowSpan} style={{verticalAlign: 'middle'}} className="sticky-col sticky-col-1 col-store-name">{row.store_name}</td>}
+                                                <td className="sticky-col sticky-col-2">{row.photo_detail_type}</td>
                                                 {daysInMonth.map(day => {
                                                     const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                                     const currentDaySale = row.daily_sales[dateKey] || 0;

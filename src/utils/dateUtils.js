@@ -14,7 +14,8 @@ export const getFirstDayOfMonthString = () => {
 
 export const formatNumber = (num) => {
   const number = Number(num);
-  return number ? number.toLocaleString() : '0';
+  const roundedNumber = Math.round(number);
+  return roundedNumber ? roundedNumber.toLocaleString() : '0';
 };
 
 export const formatDateTime = (isoString) => {
