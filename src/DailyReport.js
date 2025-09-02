@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import DailyReportPrint from './DailyReportPrint';
 import { Container, Form, Button, Table, Spinner, Alert, Row, Col, Card, ButtonGroup } from 'react-bootstrap';
 import './App.css';
 import { formatNumber } from './utils/dateUtils';
@@ -35,6 +36,19 @@ function DailyReport() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [monthlyTrendData, setMonthlyTrendData] = useState([]);
+    const [showPrintView, setShowPrintView] = useState(false);
+
+    useEffect(() => {
+        if (showPrintView) {
+            document.body.classList.add('print-view-open');
+        } else {
+            document.body.classList.remove('print-view-open');
+        }
+        // Cleanup function to remove the class when the component unmounts
+        return () => {
+            document.body.classList.remove('print-view-open');
+        };
+    }, [showPrintView]);
 
     const BRAND_COLOR = '#FF7300';
 
@@ -350,157 +364,171 @@ function DailyReport() {
 
 
     return (
-        <Container className="mt-4">
-            <h2>매출 일보</h2>
-
-            <Form onSubmit={handleSearch} className="mb-4 p-4 border rounded bg-light">
-                <Row className="gy-3 align-items-center">
-                    <Col md={6} lg={4}>
-                        <Form.Group controlId="yearSelect">
-                            <Form.Label className="mt-2">년도</Form.Label>
-                            <Form.Control
-                                type="number"
-                                value={year}
-                                onChange={(e) => setYear(parseInt(e.target.value))}
-                                required
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={6} lg={4}>
-                        <Form.Group controlId="monthSelect">
-                            <Form.Label className="mt-2">월</Form.Label>
-                            <Form.Control
-                                type="number"
-                                value={month}
-                                onChange={handleMonthChange} // 변경된 핸들러 사용
-                                required
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col lg={2} className="d-flex align-items-end mt-auto">
-                        <Button variant="primary" type="submit" disabled={loading} className="w-100" style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR }}>
-                            {loading ? <Spinner as="span" animation="border" size="sm" /> : '조회'}
-                        </Button>
-                    </Col>
-                </Row>
-                <Row className="mt-3">
-                    <Col>
-                        <ButtonGroup size="sm">
-                            <Button variant="outline-secondary" onClick={() => handleMonthPreset(3)}>3개월 전</Button>
-                            <Button variant="outline-secondary" onClick={() => handleMonthPreset(2)}>2개월 전</Button>
-                            <Button variant="outline-secondary" onClick={() => handleMonthPreset(1)}>지난달</Button>
-                        </ButtonGroup>
-                    </Col>
-                </Row>
-            </Form>
-
-            {error && <Alert variant="danger">{error}</Alert>}
-
-            {loading ? (
-                <div className="text-center p-5"><Spinner/></div>
-            ) : dailyReportData.length === 0 ? (
-                <Alert variant="info">조회된 데이터가 없습니다.</Alert>
+        <>
+            {showPrintView ? (
+                <DailyReportPrint 
+                    year={year}
+                    month={month}
+                    chartData={chartData}
+                    chartOptions={chartOptions}
+                    storeSalesSummary={storeSalesSummary}
+                    processedDetailedData={processedDetailedData}
+                    daysInMonth={daysInMonth}
+                    monthlyTrendData={monthlyTrendData}
+                    handleClose={() => setShowPrintView(false)}
+                />
             ) : (
-                <>
-                    {/* 점포별 매출 추이 라인 그래프 */}
-                    <h5 className="mt-4">점포별 매출 추이</h5>
-                    <Card className="mb-4 w-100">
-                        <Card.Body>
-                            <div style={{ height: '350px' }}>
-                                {monthlyTrendData.length > 0 ? (
-                                    <Line data={chartData} options={chartOptions} />
-                                ) : (
-                                    <Alert variant="info">지난 12개월간의 매출 추이 데이터가 없습니다.</Alert>
-                                )}
-                            </div>
-                        </Card.Body>
-                    </Card>
+                <Container className="mt-4">
+                    <h2>매출 일보</h2>
 
-                    {/* 월간 진도율 카드 (새로운 위치) */}
-                    {progressRate !== null && (
-                        <Card className="mb-4">
-                            <Card.Body>
-                                <h5 className="mb-0">월간 진도율: {progressRate}%</h5>
-                            </Card.Body>
-                        </Card>
-                    )}
+                    <Form onSubmit={handleSearch} className="mb-4 p-4 border rounded bg-light">
+                        <Row className="gy-3 align-items-center">
+                            <Col md={6} lg={4}>
+                                <Form.Group controlId="yearSelect">
+                                    <Form.Label className="mt-2">년도</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={year}
+                                        onChange={(e) => setYear(parseInt(e.target.value))}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6} lg={4}>
+                                <Form.Group controlId="monthSelect">
+                                    <Form.Label className="mt-2">월</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={month}
+                                        onChange={handleMonthChange} // 변경된 핸들러 사용
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col lg={2} className="d-flex align-items-end mt-auto">
+                                <Button variant="primary" type="submit" disabled={loading} className="w-100" style={{ backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR }}>
+                                    {loading ? <Spinner as="span" animation="border" size="sm" /> : '조회'}
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Row className="mt-3">
+                            <Col>
+                                <ButtonGroup size="sm">
+                                    <Button variant="outline-secondary" onClick={() => handleMonthPreset(3)}>3개월 전</Button>
+                                    <Button variant="outline-secondary" onClick={() => handleMonthPreset(2)}>2개월 전</Button>
+                                    <Button variant="outline-secondary" onClick={() => handleMonthPreset(1)}>지난달</Button>
+                                </ButtonGroup>
+                            </Col>
+                        </Row>
+                    </Form>
 
-                    {/* 점포별 매출 테이블 */}
-                    <h5 className="mt-4">{month}월 점포별 매출 (단위: 천원)</h5>
-                    <Card className="mb-4">
-                        <Card.Body>
-                            <Table bordered hover responsive>
-                                <thead>
-                                    <tr>
-                                        <th>점포</th>
-                                        <th>누계</th>
-                                        <th>추정</th>
-                                        <th>전월비</th>
-                                        <th>전년비</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {storeSalesSummary.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{item.store_name}</td>
-                                            <td className="text-end">{formatNumber(item.monthly_total / 1000)}</td>
-                                            <td className="text-end">{formatNumber(item.estimated_monthly / 1000)}</td>
-                                            <td className="text-end">
-                                                {item.mom !== null ? (
-                                                    <span style={{ color: item.mom > 0 ? 'blue' : 'red' }}>
-                                                        {item.mom.toFixed(1)}%
-                                                    </span>
-                                                ) : '-'}
-                                            </td>
-                                            <td className="text-end">
-                                                {item.yoy !== null ? (
-                                                    <span style={{ color: item.yoy > 0 ? 'blue' : 'red' }}>
-                                                        {item.yoy.toFixed(1)}%
-                                                    </span>
-                                                ) : '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr className="fw-bold">
-                                        <th>합계</th>
-                                        <th className="text-end">{formatNumber(storeSalesSummary.reduce((sum, item) => sum + item.monthly_total, 0) / 1000)}</th>
-                                        <th className="text-end">{formatNumber(storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0) / 1000)}</th>
-                                        <th className="text-end">
-                                            {(() => {
-                                                const totalEstimated = storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0);
-                                                
-                                                const prevMonthDate = new Date(year, month - 2, 1);
-                                                const prevMonthLabel = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
-                                                
-                                                const totalPrevMonthSales = storeSalesSummary.reduce((sum, item) => {
-                                                    const storeTrend = monthlyTrendData.find(t => t.store_name === item.store_name && `${t.sales_year}-${String(t.sales_month).padStart(2, '0')}` === prevMonthLabel);
-                                                    return sum + (storeTrend ? storeTrend.total_sales : 0);
-                                                }, 0);
+                    {error && <Alert variant="danger">{error}</Alert>}
 
-                                                const totalMom = totalPrevMonthSales > 0 ? ((totalEstimated - totalPrevMonthSales) / totalPrevMonthSales) * 100 : null;
+                    {loading ? (
+                        <div className="text-center p-5"><Spinner/></div>
+                    ) : dailyReportData.length === 0 ? (
+                        <Alert variant="info">조회된 데이터가 없습니다.</Alert>
+                    ) : (
+                        <>
+                            {/* 점포별 매출 추이 라인 그래프 */}
+                            <h5 className="mt-4">점포별 매출 추이</h5>
+                            <Card className="mb-4 w-100">
+                                <Card.Body>
+                                    <div style={{ height: '350px' }}>
+                                        {monthlyTrendData.length > 0 ? (
+                                            <Line data={chartData} options={chartOptions} />
+                                        ) : (
+                                            <Alert variant="info">지난 12개월간의 매출 추이 데이터가 없습니다.</Alert>
+                                        )}
+                                    </div>
+                                </Card.Body>
+                            </Card>
 
-                                                return totalMom !== null ? (
-                                                    <span style={{ color: totalMom > 0 ? 'blue' : 'red' }}>
-                                                        {totalMom.toFixed(1)}%
-                                                    </span>
-                                                ) : '-';
-                                            })()}
-                                        </th>
-                                        <th className="text-end">
-                                            {(() => {
-                                                const totalEstimated = storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0);
+                            {/* 월간 진도율 카드 (새로운 위치) */}
+                            {progressRate !== null && (
+                                <Card className="mb-4">
+                                    <Card.Body>
+                                        <h5 className="mb-0">월간 진도율: {progressRate}%</h5>
+                                    </Card.Body>
+                                </Card>
+                            )}
 
-                                                const prevYearDate = new Date(year - 1, month - 1, 1);
-                                                const prevYearLabel = `${prevYearDate.getFullYear()}-${String(prevYearDate.getMonth() + 1).padStart(2, '0')}`;
+                            {/* 점포별 매출 테이블 */}
+                            <h5 className="mt-4">{month}월 점포별 매출 (단위: 천원)</h5>
+                            <Card className="mb-4">
+                                <Card.Body>
+                                    <Table bordered hover responsive>
+                                        <thead>
+                                            <tr>
+                                                <th>점포</th>
+                                                <th>누계</th>
+                                                <th>추정</th>
+                                                <th>전월비</th>
+                                                <th>전년비</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {storeSalesSummary.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{item.store_name}</td>
+                                                    <td className="text-end">{formatNumber(item.monthly_total / 1000)}</td>
+                                                    <td className="text-end">{formatNumber(item.estimated_monthly / 1000)}</td>
+                                                    <td className="text-end">
+                                                        {item.mom !== null ? (
+                                                            <span style={{ color: item.mom > 0 ? 'blue' : 'red' }}>
+                                                                {item.mom.toFixed(1)}%
+                                                            </span>
+                                                        ) : '-'}
+                                                    </td>
+                                                    <td className="text-end">
+                                                        {item.yoy !== null ? (
+                                                            <span style={{ color: item.yoy > 0 ? 'blue' : 'red' }}>
+                                                                {item.yoy.toFixed(1)}%
+                                                            </span>
+                                                        ) : '-'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="fw-bold">
+                                                <th>합계</th>
+                                                <th className="text-end">{formatNumber(storeSalesSummary.reduce((sum, item) => sum + item.monthly_total, 0) / 1000)}</th>
+                                                <th className="text-end">{formatNumber(storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0) / 1000)}</th>
+                                                <th className="text-end">
+                                                    {(() => {
+                                                        const totalEstimated = storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0);
+                                                        
+                                                        const prevMonthDate = new Date(year, month - 2, 1);
+                                                        const prevMonthLabel = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                                                        
+                                                        const totalPrevMonthSales = storeSalesSummary.reduce((sum, item) => {
+                                                            const storeTrend = monthlyTrendData.find(t => t.store_name === item.store_name && `${t.sales_year}-${String(t.sales_month).padStart(2, '0')}` === prevMonthLabel);
+                                                            return sum + (storeTrend ? storeTrend.total_sales : 0);
+                                                        }, 0);
 
-                                                const totalPrevYearSales = storeSalesSummary.reduce((sum, item) => {
-                                                    const storeTrend = monthlyTrendData.find(t => t.store_name === item.store_name && `${t.sales_year}-${String(t.sales_month).padStart(2, '0')}` === prevYearLabel);
-                                                    return sum + (storeTrend ? storeTrend.total_sales : 0);
-                                                }, 0);
+                                                        const totalMom = totalPrevMonthSales > 0 ? ((totalEstimated - totalPrevMonthSales) / totalPrevMonthSales) * 100 : null;
 
-                                                const totalYoy = totalPrevYearSales > 0 ? ((totalEstimated - totalPrevYearSales) / totalPrevYearSales) * 100 : null;
+                                                        return totalMom !== null ? (
+                                                            <span style={{ color: totalMom > 0 ? 'blue' : 'red' }}>
+                                                                {totalMom.toFixed(1)}%
+                                                            </span>
+                                                        ) : '-';
+                                                    })()}
+                                                </th>
+                                                <th className="text-end">
+                                                    {(() => {
+                                                        const totalEstimated = storeSalesSummary.reduce((sum, item) => sum + item.estimated_monthly, 0);
+
+                                                        const prevYearDate = new Date(year - 1, month - 1, 1);
+                                                        const prevYearLabel = `${prevYearDate.getFullYear()}-${String(prevYearDate.getMonth() + 1).padStart(2, '0')}`;
+
+                                                        const totalPrevYearSales = storeSalesSummary.reduce((sum, item) => {
+                                                            const storeTrend = monthlyTrendData.find(t => t.store_name === item.store_name && `${t.sales_year}-${String(t.sales_month).padStart(2, '0')}` === prevYearLabel);
+                                                            return sum + (storeTrend ? storeTrend.total_sales : 0);
+                                                        }, 0);
+
+                                                        const totalYoy = totalPrevYearSales > 0 ? ((totalEstimated - totalPrevYearSales) / totalPrevYearSales) * 100 : null;
 
                                                 return totalYoy !== null ? (
                                                     <span style={{ color: totalYoy > 0 ? 'blue' : 'red' }}>
@@ -511,73 +539,78 @@ function DailyReport() {
                                         </th>
                                     </tr>
                                 </tfoot>
-                            </Table>
-                        </Card.Body>
-                    </Card>
+                                    </Table>
+                                </Card.Body>
+                            </Card>
 
-                    {/* 컨셉별 상세매출 테이블 */}
-                    <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
-                        <h5 className="mb-0">{month}월 일보 (단위: 천원)</h5>
-                        <ButtonGroup size="sm">
-                            <Button variant="outline-secondary" onClick={scrollToLeft}>맨 왼쪽</Button>
-                            <Button variant="outline-secondary" onClick={scrollToRight}>맨 오른쪽</Button>
-                        </ButtonGroup>
-                    </div>
-                    <div ref={tableContainerRef} className="table-container" style={{ overflowX: 'auto' }}>
-                        <Table bordered hover responsive className="detailed-report-table">
-                            <thead>
-                                <tr>
-                                    <th className="sticky-col sticky-col-1 col-store-name">점포</th>
-                                    <th className="sticky-col sticky-col-2">사진유형</th>
-                                    {daysInMonth.map(day => (
-                                        <th key={day} className="text-end">{day}</th>
-                                    ))}
-                                    <th className="col-nowrap">누계</th>
-                                    <th>추정</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {processedDetailedData.map((row, index) => {
-                                    if (row.type === 'grandtotal') {
-                                        return (
-                                            <tr key="grand-total" className="fw-bold" style={{ backgroundColor: 'white', color: BRAND_COLOR, borderBottom: '3px solid #495057' }}>
-                                                <td className="sticky-col sticky-col-1">전체</td><td className="sticky-col sticky-col-2">합계</td>
-                                                {daysInMonth.map(day => <td key={day} className="text-end">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
-                                                <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
-                                                <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
-                                            </tr>
-                                        );
-                                    } else if (row.type === 'subtotal') {
-                                        return (
-                                            <tr key={`subtotal-${row.store_name}`} className={`fw-bold store-color-${row.colorIndex}`}>
-                                                <td className="sticky-col sticky-col-2">소계</td>
-                                                {daysInMonth.map(day => <td key={day} className="text-end">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
-                                                <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
-                                                <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
-                                            </tr>
-                                        );
-                                    } else { // type === 'data'
-                                        return (
-                                            <tr key={`${row.store_name}-${row.photo_detail_type}-${index}`} className={`${row.isFirstInGroup ? 'new-store-row' : ''} store-color-${row.colorIndex}`}>
-                                                {row.isFirstInGroup && <td rowSpan={row.rowSpan} style={{verticalAlign: 'middle'}} className="sticky-col sticky-col-1 col-store-name">{row.store_name}</td>}
-                                                <td className="sticky-col sticky-col-2">{row.photo_detail_type}</td>
-                                                {daysInMonth.map(day => {
-                                                    const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                                                    const currentDaySale = row.daily_sales[dateKey] || 0;
-                                                    return <td key={day} className="text-end">{currentDaySale === 0 ? '-' : formatNumber(currentDaySale / 1000)}</td>;
-                                                })}
-                                                <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
-                                                <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
-                                            </tr>
-                                        );
-                                    }
-                                })}
-                            </tbody>
-                        </Table>
-                    </div>
-                </>
+                            {/* 컨셉별 상세매출 테이블 */}
+                            <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
+                                <h5 className="mb-0">{month}월 일보 (단위: 천원)</h5>
+                                <div>
+                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setShowPrintView(true)}>전체화면</Button>
+                                    <ButtonGroup size="sm">
+                                        <Button variant="outline-secondary" onClick={scrollToLeft}>맨 왼쪽</Button>
+                                        <Button variant="outline-secondary" onClick={scrollToRight}>맨 오른쪽</Button>
+                                    </ButtonGroup>
+                                </div>
+                            </div>
+                            <div ref={tableContainerRef} className="table-container" style={{ overflowX: 'auto' }}>
+                                <Table bordered hover responsive className="detailed-report-table">
+                                    <thead>
+                                        <tr>
+                                            <th className="sticky-col sticky-col-1 col-store-name">점포</th>
+                                            <th className="sticky-col sticky-col-2">사진유형</th>
+                                            {daysInMonth.map(day => (
+                                                <th key={day} className="text-end day-column">{day}</th>
+                                            ))}
+                                            <th className="col-nowrap">누계</th>
+                                            <th>추정</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {processedDetailedData.map((row, index) => {
+                                            if (row.type === 'grandtotal') {
+                                                return (
+                                                    <tr key="grand-total" className="fw-bold" style={{ backgroundColor: 'white', color: BRAND_COLOR, borderBottom: '3px solid #495057' }}>
+                                                        <td className="sticky-col sticky-col-1">전체</td><td className="sticky-col sticky-col-2">합계</td>
+                                                        {daysInMonth.map(day => <td key={day} className="text-end day-column">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
+                                                        <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
+                                                        <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
+                                                    </tr>
+                                                );
+                                            } else if (row.type === 'subtotal') {
+                                                return (
+                                                    <tr key={`subtotal-${row.store_name}`} className={`fw-bold store-color-${row.colorIndex}`}>
+                                                        <td className="sticky-col sticky-col-2">소계</td>
+                                                        {daysInMonth.map(day => <td key={day} className="text-end day-column">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
+                                                        <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
+                                                        <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
+                                                    </tr>
+                                                );
+                                            } else { // type === 'data'
+                                                return (
+                                                    <tr key={`${row.store_name}-${row.photo_detail_type}-${index}`} className={`${row.isFirstInGroup ? 'new-store-row' : ''} store-color-${row.colorIndex}`}>
+                                                        {row.isFirstInGroup && <td rowSpan={row.rowSpan} style={{verticalAlign: 'middle'}} className="sticky-col sticky-col-1 col-store-name">{row.store_name}</td>}
+                                                        <td className="sticky-col sticky-col-2">{row.photo_detail_type}</td>
+                                                        {daysInMonth.map(day => {
+                                                            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                                            const currentDaySale = row.daily_sales[dateKey] || 0;
+                                                            return <td key={day} className="text-end day-column">{currentDaySale === 0 ? '-' : formatNumber(currentDaySale / 1000)}</td>;
+                                                        })}
+                                                        <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
+                                                        <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
+                                                    </tr>
+                                                );
+                                            }
+                                        })}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </>
+                    )}
+                </Container>
             )}
-        </Container>
+        </>
     );
 }
 

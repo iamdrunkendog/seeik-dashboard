@@ -29,8 +29,15 @@
 }
 
 /* Style for the new-store-row border */
-.new-store-row td {
-    border-top: 3px solid #dee2e6 !important; /* 굵은 선 */
+.new-store-row {
+  border-top: 2px solid #dee2e6; /* 점포 그룹 시작 시 상단 테두리 */
+}
+
+/* 일자별 매출 열 너비 고정 */
+.detailed-report-table .day-column {
+  width: 45px;
+  min-width: 45px;
+  text-align: right;
 }
 
 /* Detailed report table styles for compactness */

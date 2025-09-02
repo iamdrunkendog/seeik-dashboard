@@ -1,0 +1,106 @@
+/* DailyReportPrint.css */
+body.print-view-open {
+    overflow: hidden; /* 스크롤 방지 */
+}
+
+.print-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    z-index: 1050; /* Bootstrap modal z-index is 1050 */
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.print-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 80px); /* Adjust based on header height */
+}
+
+.print-top-section {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 350px; /* 차트와 테이블 높이 확보 */
+}
+
+.print-top-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.print-top-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.print-bottom-section {
+    flex-grow: 1;
+    overflow: hidden; /* 내부에서 스크롤되도록 */
+    display: flex;
+    flex-direction: column;
+}
+
+.print-bottom-section .table-container {
+    height: 100%;
+    overflow-x: auto;
+}
+
+/* A4 가로 인쇄 스타일 */
+@media print {
+    /* 전체화면 모드에서만 인쇄 스타일 적용 */
+    .print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        padding: 15mm; /* A4 여백 */
+        background: white;
+        overflow: visible;
+        z-index: auto;
+    }
+
+    .print-header {
+        display: none; /* 인쇄 시 헤더(버튼 등) 숨기기 */
+    }
+
+    .print-content {
+        height: auto;
+    }
+
+    .print-top-section {
+        height: auto;
+        page-break-after: always; /* 위쪽 섹션 출력 후 페이지 나누기 */
+    }
+    
+    .print-bottom-section {
+        overflow: visible;
+        page-break-inside: avoid;
+    }
+
+    @page {
+        size: A4 landscape;
+        margin: 15mm;
+    }
+
+    body, html {
+        width: 100%;
+        height: auto;
+        background: white !important;
+    }
+}
