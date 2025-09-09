@@ -109,3 +109,17 @@
 .col-nowrap {
   white-space: nowrap;
 }
+
+/* Today marker row styles */
+.detailed-report-table .today-marker-row,
+.detailed-report-table .today-marker-row th {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Today column styles */
+.detailed-report-table .today-column {
+  color: #FF7300 !important; /* BRAND_COLOR */
+  font-weight: bold;
+}

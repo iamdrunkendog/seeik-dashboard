@@ -100,9 +100,47 @@ function DailyReport() {
         fetchMonthlyTrendData(year, month);
     }, [handleSearch, fetchMonthlyTrendData, year, month]);
 
+    const adjustedDailyReportData = useMemo(() => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentDay = today.getDate();
+
+        if (year === currentYear && month === currentMonth) {
+            const totalDaysInMonth = new Date(year, month, 0).getDate();
+            // 어제까지의 날짜 수
+            const numberOfDaysPassed = currentDay - 1;
+
+            // 만약 오늘이 1일이라면, 어제까지의 데이터가 없으므로 추정 매출은 0
+            if (numberOfDaysPassed <= 0) {
+                return dailyReportData.map(item => ({ ...item, estimated_monthly: 0 }));
+            }
+
+            return dailyReportData.map(item => {
+                // 어제까지의 매출 합산
+                const salesUntilYesterday = Object.entries(item.daily_sales)
+                    .filter(([date]) => {
+                        const dayOfMonth = parseInt(date.split('-')[2], 10);
+                        return dayOfMonth < currentDay;
+                    })
+                    .reduce((sum, [, sales]) => sum + sales, 0);
+
+                // 어제까지의 일 평균 매출
+                const averageDailySales = salesUntilYesterday / numberOfDaysPassed;
+                // 추정 월 매출 계산
+                const estimated_monthly = averageDailySales * totalDaysInMonth;
+
+                return { ...item, estimated_monthly };
+            });
+        }
+
+        // 현재 월이 아닌 경우, 기존 데이터를 그대로 사용
+        return dailyReportData;
+    }, [dailyReportData, year, month]);
+
     const storeSalesSummary = useMemo(() => {
         const summary = {};
-        dailyReportData.forEach(item => {
+        adjustedDailyReportData.forEach(item => {
             if (!summary[item.store_name]) {
                 summary[item.store_name] = {
                     monthly_total: 0,
@@ -143,19 +181,39 @@ function DailyReport() {
                 yoy,
             };
         });
-    }, [dailyReportData, monthlyTrendData, year, month]);
+    }, [adjustedDailyReportData, monthlyTrendData, year, month]);
 
-    const progressRate = useMemo(() => {
+    const progressRateInfo = useMemo(() => {
         const today = new Date();
         const currentYear = today.getFullYear();
         const currentMonth = today.getMonth() + 1;
         const currentDay = today.getDate();
 
+        const totalDaysInSelectedMonth = new Date(year, month, 0).getDate();
+
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            return "100.00";
+            const lastDayOfMonth = new Date(year, month, 0);
+            const baseDate = `${lastDayOfMonth.getFullYear()}-${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}-${String(lastDayOfMonth.getDate()).padStart(2, '0')}`;
+            return {
+                rate: "100.00",
+                totalDays: totalDaysInSelectedMonth,
+                daysPassed: totalDaysInSelectedMonth,
+                baseDate: baseDate
+            };
         } else if (year === currentYear && month === currentMonth) {
-            const totalDaysInSelectedMonth = new Date(year, month, 0).getDate();
-            return ((currentDay / totalDaysInSelectedMonth) * 100).toFixed(2);
+            const daysPassed = currentDay > 1 ? currentDay - 1 : 0;
+            const rate = totalDaysInSelectedMonth > 0 ? ((daysPassed / totalDaysInSelectedMonth) * 100).toFixed(2) : "0.00";
+            
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const baseDate = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+            return {
+                rate: rate,
+                totalDays: totalDaysInSelectedMonth,
+                daysPassed: daysPassed,
+                baseDate: baseDate
+            };
         }
         return null;
     }, [year, month]);
@@ -256,9 +314,9 @@ function DailyReport() {
 
     // 컨셉별 상세매출 테이블 데이터 처리 (소계 및 총계 포함)
     const processedDetailedData = useMemo(() => {
-        if (dailyReportData.length === 0) return [];
+        if (adjustedDailyReportData.length === 0) return [];
 
-        const sortedData = [...dailyReportData].sort((a, b) => a.store_name.localeCompare(b.store_name));
+        const sortedData = [...adjustedDailyReportData].sort((a, b) => a.store_name.localeCompare(b.store_name));
 
         // 각 점포가 몇 개의 데이터 행을 가지는지 미리 계산
         const storeRowCounts = {};
@@ -345,7 +403,7 @@ function DailyReport() {
         });
 
         return data;
-    }, [dailyReportData, daysInMonth, year, month]);
+    }, [adjustedDailyReportData, daysInMonth, year, month]);
 
     const tableContainerRef = useRef(null);
 
@@ -445,10 +503,15 @@ function DailyReport() {
                             </Card>
 
                             {/* 월간 진도율 카드 (새로운 위치) */}
-                            {progressRate !== null && (
+                            {progressRateInfo !== null && (
                                 <Card className="mb-4">
                                     <Card.Body>
-                                        <h5 className="mb-0">월간 진도율: {progressRate}%</h5>
+                                        <h5 className="mb-0">
+                                            월간 진도율: {progressRateInfo.rate}% 
+                                            <span style={{ fontSize: '0.8rem', marginLeft: '10px', color: '#6c757d' }}>
+                                                ({progressRateInfo.totalDays}일 중 {progressRateInfo.daysPassed}일, {progressRateInfo.baseDate} 기준)
+                                            </span>
+                                        </h5>
                                     </Card.Body>
                                 </Card>
                             )}
@@ -557,12 +620,28 @@ function DailyReport() {
                             <div ref={tableContainerRef} className="table-container" style={{ overflowX: 'auto' }}>
                                 <Table bordered hover responsive className="detailed-report-table">
                                     <thead>
+                                        {year === new Date().getFullYear() && month === new Date().getMonth() + 1 && (
+                                            <tr className="today-marker-row">
+                                                <th className="sticky-col sticky-col-1 col-store-name"></th>
+                                                <th className="sticky-col sticky-col-2"></th>
+                                                {daysInMonth.map(day => (
+                                                    <th key={`today-marker-${day}`} className="text-center" style={{ padding: '0.25rem 0', height: '10px', color: BRAND_COLOR }}>
+                                                        {day === new Date().getDate() ? '▼' : ''}
+                                                    </th>
+                                                ))}
+                                                <th></th>
+                                                <th></th>
+                                            </tr>
+                                        )}
                                         <tr>
                                             <th className="sticky-col sticky-col-1 col-store-name">점포</th>
                                             <th className="sticky-col sticky-col-2">사진유형</th>
-                                            {daysInMonth.map(day => (
-                                                <th key={day} className="text-end day-column">{day}</th>
-                                            ))}
+                                            {daysInMonth.map(day => {
+                                                const isToday = year === new Date().getFullYear() && month === new Date().getMonth() + 1 && day === new Date().getDate();
+                                                return (
+                                                    <th key={day} className={`text-end day-column ${isToday ? 'today-column' : ''}`}>{day}</th>
+                                                );
+                                            })}
                                             <th className="col-nowrap">누계</th>
                                             <th>추정</th>
                                         </tr>
@@ -573,7 +652,12 @@ function DailyReport() {
                                                 return (
                                                     <tr key="grand-total" className="fw-bold" style={{ backgroundColor: 'white', color: BRAND_COLOR, borderBottom: '3px solid #495057' }}>
                                                         <td className="sticky-col sticky-col-1">전체</td><td className="sticky-col sticky-col-2">합계</td>
-                                                        {daysInMonth.map(day => <td key={day} className="text-end day-column">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
+                                                        {daysInMonth.map(day => {
+                                                            const isToday = year === new Date().getFullYear() && month === new Date().getMonth() + 1 && day === new Date().getDate();
+                                                            return (
+                                                                <td key={day} className={`text-end day-column ${isToday ? 'today-column' : ''}`}>{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>
+                                                            );
+                                                        })}
                                                         <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
                                                         <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
                                                     </tr>
@@ -582,7 +666,12 @@ function DailyReport() {
                                                 return (
                                                     <tr key={`subtotal-${row.store_name}`} className={`fw-bold store-color-${row.colorIndex}`}>
                                                         <td className="sticky-col sticky-col-2">소계</td>
-                                                        {daysInMonth.map(day => <td key={day} className="text-end day-column">{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>)}
+                                                        {daysInMonth.map(day => {
+                                                            const isToday = year === new Date().getFullYear() && month === new Date().getMonth() + 1 && day === new Date().getDate();
+                                                            return (
+                                                                <td key={day} className={`text-end day-column ${isToday ? 'today-column' : ''}`}>{row.daily_sales_sum[day] === 0 ? '-' : formatNumber(row.daily_sales_sum[day] / 1000)}</td>
+                                                            )
+                                                        })}
                                                         <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
                                                         <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
                                                     </tr>
@@ -595,7 +684,8 @@ function DailyReport() {
                                                         {daysInMonth.map(day => {
                                                             const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                                             const currentDaySale = row.daily_sales[dateKey] || 0;
-                                                            return <td key={day} className="text-end day-column">{currentDaySale === 0 ? '-' : formatNumber(currentDaySale / 1000)}</td>;
+                                                            const isToday = year === new Date().getFullYear() && month === new Date().getMonth() + 1 && day === new Date().getDate();
+                                                            return <td key={day} className={`text-end day-column ${isToday ? 'today-column' : ''}`}>{currentDaySale === 0 ? '-' : formatNumber(currentDaySale / 1000)}</td>;
                                                         })}
                                                         <td className="text-end">{formatNumber(row.monthly_total / 1000)}</td>
                                                         <td className="text-end">{formatNumber(Math.round(row.estimated_monthly / 1000))}</td>
